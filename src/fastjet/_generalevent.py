@@ -533,7 +533,7 @@ class _classgeneralevent:
         res = ak.Array(self._replace_multi())
         if all_angles:
             if npoint > 2:
-                res = ak.unflatten(res, counts = ((npoint*(npoint-1))/2))
+                res = ak.unflatten(res, counts=((npoint * (npoint - 1)) / 2))
         return res
 
     def exclusive_jets_lund_declusterings(self, njets):

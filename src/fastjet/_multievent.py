@@ -306,7 +306,7 @@ class _classmultievent:
         )
         out = ak.Array(ak.contents.NumpyArray(np_results))
         if all_angles:
-            out = ak.unflatten(out, counts = ((npoint*(npoint-1))/2))
+            out = ak.unflatten(out, counts=((npoint * (npoint - 1)) / 2))
         return out
 
     def exclusive_jets_lund_declusterings(self, njets):
