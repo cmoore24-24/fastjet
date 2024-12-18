@@ -1751,7 +1751,7 @@ PYBIND11_MODULE(_ext, m) {
           Returns an array of values from the jet after it has been groomed by softdrop.
       )pbdoc")
       .def("to_numpy_energy_correlators",
-      [](const output_wrapper ow, const int n_jets = 1, const double beta = 1, double npoint = 0, int angles = 0, double alpha = 0, std::string func = "generalized", bool normalized = true) {
+      [](const output_wrapper ow, const int n_jets = 1, const double beta = 1, double npoint = 0, int angles = 0, double alpha = 0, std::string func = "generalized", bool normalized = true, bool all_angles = false) {
         auto css = ow.cse;
 
         std::transform(func.begin(), func.end(), func.begin(),
@@ -1802,8 +1802,16 @@ PYBIND11_MODULE(_ext, m) {
           auto jets = css[i]->exclusive_jets(n_jets);
 
           for (unsigned int j = 0; j < jets.size(); j++){
-            auto ecf_result = energy_correlator->result(jets[j]); //
-            ECF_vec.push_back(ecf_result);
+            if (all_angles) {
+              auto ecf_generalized = std::dynamic_pointer_cast<fastjet::contrib::EnergyCorrelatorGeneralized>(energy_correlator);
+              if (ecf_generalized) {
+                auto ecf_results = ecf_generalized->result_all_angles(jets[j]);
+                ECF_vec.insert(ECF_vec.end(), ecf_results.begin(), ecf_results.end());
+              }
+            } else {
+              auto ecf_result = energy_correlator->result(jets[j]);
+              ECF_vec.push_back(ecf_result);
+            }
           }
         }
 

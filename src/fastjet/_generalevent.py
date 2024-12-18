@@ -514,12 +514,13 @@ class _classgeneralevent:
     def exclusive_jets_energy_correlator(
         self,
         njets=1,
-        n_point=0,
+        npoint=0,
         angles: int = -1,
         beta=1,
         alpha=0,
         func="generalized",
         normalized=True,
+        all_angles=False,
     ):
         if njets <= 0:
             raise ValueError("Njets cannot be <= 0")
@@ -530,6 +531,9 @@ class _classgeneralevent:
             np_results = self._results[i].to_numpy_energy_correlators()
             self._out.append(ak.Array(ak.contents.NumpyArray(np_results[0])))
         res = ak.Array(self._replace_multi())
+        if all_angles:
+            if npoint > 2:
+                res = ak.unflatten(res, counts = ((npoint*(npoint-1))/2))
         return res
 
     def exclusive_jets_lund_declusterings(self, njets):

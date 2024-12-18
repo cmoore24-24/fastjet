@@ -290,6 +290,7 @@ class _classmultievent:
         alpha=0,
         func="generalized",
         normalized=True,
+        all_angles=False,
     ):
         if njets <= 0:
             raise ValueError("Njets cannot be <= 0")
@@ -301,8 +302,11 @@ class _classmultievent:
             alpha,
             func,
             normalized,
+            all_angles,
         )
         out = ak.Array(ak.contents.NumpyArray(np_results))
+        if all_angles:
+            out = ak.unflatten(out, counts = ((npoint*(npoint-1))/2))
         return out
 
     def exclusive_jets_lund_declusterings(self, njets):
