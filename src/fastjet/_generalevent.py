@@ -761,12 +761,13 @@ class _classgeneralevent:
     def exclusive_jets_energy_correlator(
         self,
         njets=1,
-        n_point=0,
+        npoint=0,
         angles: int = -1,
         beta=1,
         alpha=0,
         func="generalized",
         normalized=True,
+        all_angles=False,
     ):
         if njets <= 0:
             raise ValueError("Njets cannot be <= 0")
@@ -775,18 +776,8 @@ class _classgeneralevent:
         self._input_flag = 0
         for i in range(len(self._clusterable_level)):
             np_results = self._results[i].to_numpy_energy_correlators()
-            self._out.append(
-                ak.Array(
-                    ak.contents.NumpyArray(np_results[0]),
-                    behavior=self.data.behavior,
-                    attrs=self.data.attrs,
-                )
-            )
-        res = ak.Array(
-            self._replace_multi(),
-            behavior=self.data.behavior,
-            attrs=self.data.attrs,
-        )
+            self._out.append(ak.Array(ak.contents.NumpyArray(np_results[0])))
+        res = ak.Array(self._replace_multi())
         return res
 
     def exclusive_jets_lund_declusterings(self, njets):
@@ -807,25 +798,19 @@ class _classgeneralevent:
                         (
                             ak.contents.NumpyArray(np_results[1]),
                             ak.contents.NumpyArray(np_results[2]),
+                            ak.contents.NumpyArray(np_results[3]),
+                            ak.contents.NumpyArray(np_results[4]),
+                            ak.contents.NumpyArray(np_results[5]),
                         ),
-                        ("Delta", "kt"),
+                        ("Delta", "kt", "z", "psi", "m"),
                     ),
                 ),
                 behavior=self.data.behavior,
-                attrs=self.data.attrs,
             )
             self._out.append(
-                ak.Array(
-                    ak.contents.ListOffsetArray(ak.index.Index64(off), out.layout),
-                    behavior=self.data.behavior,
-                    attrs=self.data.attrs,
-                )
+                ak.Array(ak.contents.ListOffsetArray(ak.index.Index64(off), out.layout))
             )
-        res = ak.Array(
-            self._replace_multi(),
-            behavior=self.data.behavior,
-            attrs=self.data.attrs,
-        )
+        res = ak.Array(self._replace_multi())
         return res
 
     def unclustered_particles(self):

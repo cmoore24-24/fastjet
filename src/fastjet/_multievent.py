@@ -343,6 +343,7 @@ class _classmultievent:
         alpha=0,
         func="generalized",
         normalized=True,
+        all_angles=False,
     ):
         if njets <= 0:
             raise ValueError("Njets cannot be <= 0")
@@ -354,6 +355,7 @@ class _classmultievent:
             alpha,
             func,
             normalized,
+            all_angles,
         )
         out = ak.Array(ak.contents.NumpyArray(np_results))
         return out
@@ -371,8 +373,11 @@ class _classmultievent:
                     (
                         ak.contents.NumpyArray(np_results[1]),
                         ak.contents.NumpyArray(np_results[2]),
+                        ak.contents.NumpyArray(np_results[3]),
+                        ak.contents.NumpyArray(np_results[4]),
+                        ak.contents.NumpyArray(np_results[5]),
                     ),
-                    ("Delta", "kt"),
+                    ("Delta", "kt", "z", "psi", "m"),
                 ),
             )
         )

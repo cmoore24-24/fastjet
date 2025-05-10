@@ -1829,7 +1829,7 @@ PYBIND11_MODULE(_ext, m) {
           Returns an array of values from the jet after it has been groomed by softdrop.
       )pbdoc")
       .def("to_numpy_energy_correlators",
-      [](const output_wrapper ow, const int n_jets = 1, const double beta = 1, double npoint = 0, int angles = 0, double alpha = 0, std::string func = "generalized", bool normalized = true) {
+      [](const output_wrapper ow, const int n_jets = 1, const double beta = 1, double npoint = 0, int angles = 0, double alpha = 0, std::string func = "generalized", bool normalized = true, bool all_angles = false) {
         auto css = ow.cse;
 
         std::transform(func.begin(), func.end(), func.begin(),
@@ -1880,8 +1880,16 @@ PYBIND11_MODULE(_ext, m) {
           auto jets = css[i]->exclusive_jets(n_jets);
 
           for (unsigned int j = 0; j < jets.size(); j++){
-            auto ecf_result = energy_correlator->result(jets[j]); //
-            ECF_vec.push_back(ecf_result);
+            if (all_angles) {
+              auto ecf_generalized = std::dynamic_pointer_cast<fastjet::contrib::EnergyCorrelatorGeneralized>(energy_correlator);
+              if (ecf_generalized) {
+                auto ecf_results = ecf_generalized->result_all_angles(jets[j]);
+                ECF_vec.insert(ECF_vec.end(), ecf_results.begin(), ecf_results.end());
+              }
+            } else {
+              auto ecf_result = energy_correlator->result(jets[j]);
+              ECF_vec.push_back(ecf_result);
+            }
           }
         }
 
@@ -1900,7 +1908,7 @@ PYBIND11_MODULE(_ext, m) {
         Returns:
           Energy correlators for each jet in each event.
       )pbdoc")
-      .def("to_numpy_exclusive_njet_lund_declusterings",
+.def("to_numpy_exclusive_njet_lund_declusterings",
       [](const output_wrapper ow, const int n_jets = 0) {
         auto css = ow.cse;
         int64_t len = css.size();
@@ -1914,6 +1922,9 @@ PYBIND11_MODULE(_ext, m) {
         auto lund_generator = fastjet::contrib::LundGenerator();
         std::vector<double> Delta_vec;
         std::vector<double> kt_vec;
+        std::vector<double> z_vec;
+        std::vector<double> psi_vec;
+        std::vector<double> m_vec;
 
         auto eventoffsets = py::array(py::buffer_info(nullptr, sizeof(int), py::format_descriptor<int>::value, 1, {len+1}, {sizeof(int)}));
         auto bufeventoffsets = eventoffsets.request();
@@ -1942,6 +1953,9 @@ PYBIND11_MODULE(_ext, m) {
             for (unsigned int k = 0; k < splittings; k++){
               Delta_vec.push_back(lund_result[k].Delta());
               kt_vec.push_back(lund_result[k].kt());
+              z_vec.push_back(lund_result[k].z());
+              psi_vec.push_back(lund_result[k].psi());
+              m_vec.push_back(lund_result[k].m());
             }
 
             ptrjetoffsets[jetidx] = splittings + prev;
@@ -1956,11 +1970,17 @@ PYBIND11_MODULE(_ext, m) {
 
         auto Deltas = py::array(Delta_vec.size(), Delta_vec.data());
         auto kts = py::array(kt_vec.size(), kt_vec.data());
+        auto zs = py::array(z_vec.size(), z_vec.data());
+        auto psis = py::array(psi_vec.size(), psi_vec.data());
+        auto ms = py::array(m_vec.size(), m_vec.data());
 
         return std::make_tuple(
             jetoffsets,
             Deltas,
             kts,
+            zs,
+            psis,
+            ms,
             eventoffsets
           );
       }, "n_jets"_a = 0, R"pbdoc(
